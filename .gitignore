@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+!.env.example
+!n8n/.env.example
+
+# Convex local backend data
+.convex/
+
+# n8n bootstrap scratch (may contain decrypted credentials)
+n8n/.tmp/

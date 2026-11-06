@@ -1,0 +1,141 @@
+{
+  "id": "lendloopErrors01",
+  "name": "LendLoop · Error handler",
+  "description": null,
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "n3-trigger",
+      "name": "On workflow error",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Shared signing helper (same scheme as convex/automation/signing.ts):\n// signature = HMAC-SHA256(secret, `${ts}.${METHOD}.${pathAndQuery}.${rawBody}`)\nconst crypto = require('crypto');\nconst SECRET = $env.LENDLOOP_INBOUND_SIGNING_SECRET;\nconst BASE = ($env.LENDLOOP_CONVEX_SITE_URL || '').replace(/\\/$/, '');\nif (!SECRET || !BASE) throw new Error('LENDLOOP_INBOUND_SIGNING_SECRET and LENDLOOP_CONVEX_SITE_URL must be set');\nfunction signed(method, pathAndQuery, body) {\n  const rawBody = body === undefined ? '' : JSON.stringify(body);\n  const ts = Math.floor(Date.now() / 1000).toString();\n  const sig = crypto.createHmac('sha256', SECRET).update(`${ts}.${method}.${pathAndQuery}.${rawBody}`).digest('hex');\n  return {\n    url: BASE + pathAndQuery,\n    rawBody,\n    headers: { 'Content-Type': 'application/json', 'X-LendLoop-Timestamp': ts, 'X-LendLoop-Signature': `v1=${sig}` },\n  };\n}\n\n// The Error Trigger payload differs for execution errors vs trigger errors.\nconst e = $input.first().json;\nconst execution = e.execution || {};\nconst body = {\n  executionId: String(execution.id ?? `trigger-${e.workflow?.id ?? 'unknown'}-${Date.now()}`),\n  workflow: String(e.workflow?.name ?? 'unknown workflow').slice(0, 100),\n  node: execution.lastNodeExecuted ?? e.trigger?.error?.node?.name ?? undefined,\n  message: String(execution.error?.message ?? e.trigger?.error?.message ?? 'Unknown error').slice(0, 1000),\n  ...(execution.url ? { executionUrl: execution.url } : {}),\n};\nreturn [{ json: { report: body, ...signed('POST', '/automation/failures', body) } }];\n"
+      },
+      "id": "n3-sign",
+      "name": "Sign failure report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.url }}",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "={{ JSON.stringify($json.headers) }}",
+        "options": {
+          "timeout": 10000
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ $json.rawBody }}"
+      },
+      "id": "n3-report",
+      "name": "Report to Convex",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        440,
+        300
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.LENDLOOP_MAIL_FROM }}",
+        "toEmail": "={{ $env.LENDLOOP_OPS_EMAIL }}",
+        "subject": "={{ `⚠ LendLoop automation failed: ${$('Sign failure report').first().json.report.workflow}` }}",
+        "emailFormat": "text",
+        "text": "={{ (() => { const r = $('Sign failure report').first().json.report; return `Workflow: ${r.workflow}\\nNode: ${r.node ?? 'n/a'}\\nError: ${r.message}\\nExecution: ${r.executionUrl ?? r.executionId}\\n\\nReported to Convex: ${$json.error ? 'NO — ' + ($json.error.message ?? $json.error) : 'yes'}\\nIt is also listed on the LendLoop admin page (Admin → Automation).`; })() }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "n3-email",
+      "name": "Email ops",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        660,
+        300
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "lendloopSmtp0001",
+          "name": "LendLoop SMTP"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    }
+  ],
+  "connections": {
+    "On workflow error": {
+      "main": [
+        [
+          {
+            "node": "Sign failure report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sign failure report": {
+      "main": [
+        [
+          {
+            "node": "Report to Convex",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Report to Convex": {
+      "main": [
+        [
+          {
+            "node": "Email ops",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "meta": null,
+  "nodeGroups": [],
+  "pinData": {},
+  "sourceWorkflowId": null,
+  "tags": [],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}

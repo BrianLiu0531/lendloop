@@ -1,0 +1,95 @@
+# Self-hosted n8n for LendLoop, plus Mailpit as a local SMTP inbox.
+#
+#   cp n8n/.env.example n8n/.env   # then fill in the secrets
+#   docker compose -f n8n/docker-compose.yml up -d
+#
+# n8n UI:      http://localhost:5678
+# Mailpit UI:  http://localhost:8025  (every email n8n sends lands here)
+name: lendloop
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: n8n
+      POSTGRES_PASSWORD: ${N8N_DB_PASSWORD:?set N8N_DB_PASSWORD in n8n/.env}
+      POSTGRES_DB: n8n
+    volumes:
+      - n8n_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U n8n -d n8n"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  n8n:
+    image: n8nio/n8n:2.46.6
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5678:5678"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # --- core ---
+      N8N_HOST: localhost
+      N8N_PORT: 5678
+      N8N_PROTOCOL: http
+      N8N_WEBHOOK_URL: ${N8N_PUBLIC_URL:-http://localhost:5678/}
+      GENERIC_TIMEZONE: ${TIMEZONE:-UTC}
+      TZ: ${TIMEZONE:-UTC}
+      # Encrypts stored credentials (SMTP password etc.). Losing it = re-entering credentials.
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:?set N8N_ENCRYPTION_KEY in n8n/.env}
+      N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "true"
+      N8N_DIAGNOSTICS_ENABLED: "false"
+      N8N_PERSONALIZATION_ENABLED: "false"
+      # Self-hosted and private: no template gallery / version pings to api.n8n.io.
+      N8N_TEMPLATES_ENABLED: "false"
+      N8N_VERSION_NOTIFICATIONS_ENABLED: "false"
+      N8N_RUNNERS_TASK_TIMEOUT: 60
+      # --- database ---
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: postgres
+      DB_POSTGRESDB_DATABASE: n8n
+      DB_POSTGRESDB_USER: n8n
+      DB_POSTGRESDB_PASSWORD: ${N8N_DB_PASSWORD}
+      # --- execution history: keep failures visible, prune the rest ---
+      EXECUTIONS_DATA_SAVE_ON_ERROR: all
+      EXECUTIONS_DATA_SAVE_ON_SUCCESS: all
+      EXECUTIONS_DATA_PRUNE: "true"
+      EXECUTIONS_DATA_MAX_AGE: 336 # hours (14 days)
+      # --- Code nodes: allow HMAC via node:crypto and reading the LENDLOOP_* env vars below ---
+      NODE_FUNCTION_ALLOW_BUILTIN: crypto
+      N8N_BLOCK_ENV_ACCESS_IN_NODE: "false"
+      # --- LendLoop integration (values come from n8n/.env, never from workflow JSON) ---
+      LENDLOOP_CONVEX_SITE_URL: ${LENDLOOP_CONVEX_SITE_URL:?set LENDLOOP_CONVEX_SITE_URL in n8n/.env}
+      LENDLOOP_OUTBOUND_SIGNING_SECRET: ${LENDLOOP_OUTBOUND_SIGNING_SECRET:?set LENDLOOP_OUTBOUND_SIGNING_SECRET}
+      LENDLOOP_INBOUND_SIGNING_SECRET: ${LENDLOOP_INBOUND_SIGNING_SECRET:?set LENDLOOP_INBOUND_SIGNING_SECRET}
+      LENDLOOP_MAIL_FROM: ${LENDLOOP_MAIL_FROM:-LendLoop <hello@lendloop.test>}
+      LENDLOOP_OPS_EMAIL: ${LENDLOOP_OPS_EMAIL:-ops@lendloop.test}
+      # Bootstrap-only: used by scripts/n8n-setup.sh to create the SMTP credential.
+      LENDLOOP_SMTP_HOST: ${LENDLOOP_SMTP_HOST:-mailpit}
+      LENDLOOP_SMTP_PORT: ${LENDLOOP_SMTP_PORT:-1025}
+      LENDLOOP_SMTP_USER: ${LENDLOOP_SMTP_USER:-}
+      LENDLOOP_SMTP_PASSWORD: ${LENDLOOP_SMTP_PASSWORD:-}
+    extra_hosts:
+      # Lets n8n reach a Convex local backend running on the host (npx convex dev).
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./workflows:/workflows:ro
+
+  mailpit:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8025:8025" # web UI
+      - "127.0.0.1:1025:1025" # SMTP
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: "true"
+      MP_SMTP_AUTH_ALLOW_INSECURE: "true"
+
+volumes:
+  n8n_data:
+  n8n_db:

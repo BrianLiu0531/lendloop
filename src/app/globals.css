@@ -1,26 +1,81 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/*
+ * LendLoop design tokens: warm paper, forest ink, a single green accent and
+ * an amber "trust" color. Semantic names so components never hard-code hex.
+ */
+@theme {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-paper: #faf7f2;
+  --color-surface: #ffffff;
+  --color-sunken: #f2ede4;
+  --color-line: #e6dfd3;
+  --color-line-strong: #d4cab9;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  --color-ink: #1d2721;
+  --color-ink-soft: #4a5750;
+  --color-ink-faint: #7d877f;
+
+  --color-brand: #2d6a4f;
+  --color-brand-strong: #1f4d39;
+  --color-brand-soft: #e3efe7;
+
+  --color-trust: #b7791f;
+  --color-trust-soft: #fbf0d9;
+
+  --color-warn: #b45309;
+  --color-warn-soft: #fdf0e1;
+  --color-danger: #b42318;
+  --color-danger-soft: #fdecea;
+  --color-info: #2b5c8a;
+  --color-info-soft: #e6eff8;
+
+  --radius-card: 1rem;
+  --shadow-card: 0 1px 2px rgb(29 39 33 / 0.04), 0 4px 16px -6px rgb(29 39 33 / 0.08);
+  --shadow-lift: 0 2px 4px rgb(29 39 33 / 0.05), 0 12px 32px -10px rgb(29 39 33 / 0.18);
+
+  --animate-fade-up: fade-up 0.35s ease-out both;
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  html {
+    color-scheme: light;
+  }
+  body {
+    @apply bg-paper text-ink font-sans antialiased;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply text-balance;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand;
+  }
+  ::selection {
+    @apply bg-brand-soft;
+  }
+  dialog::backdrop {
+    background: rgb(29 39 33 / 0.35);
+    backdrop-filter: blur(2px);
+  }
+}
+
+/* Subtle dot grid on the landing hero. */
+.bg-grain {
+  background-image: radial-gradient(rgb(29 39 33 / 0.06) 1px, transparent 1px);
+  background-size: 18px 18px;
 }

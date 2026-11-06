@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Typecheck (app + Convex)
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Test (convex-test + Vitest)
+        run: npm test
+      - name: Workflow JSON is valid and secret-free
+        run: |
+          for f in n8n/workflows/*.json; do node -e "JSON.parse(require('fs').readFileSync('$f','utf8'))"; done
+          ! grep -nE '"(password|secret|apiKey|token)"\s*:\s*"[^"=]' n8n/workflows/*.json
