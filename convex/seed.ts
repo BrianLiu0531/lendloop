@@ -9,7 +9,7 @@
  */
 import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
-import { internalMutation, type MutationCtx } from "./_generated/server";
+import { internalMutation, internalQuery, type MutationCtx } from "./_generated/server";
 import { addDays, toIsoDate } from "./lib/dates";
 import { publishLoanEvent } from "./lib/outbox";
 import type { Category, Condition } from "./lib/validators";
@@ -171,5 +171,38 @@ export const involve = internalMutation({
       added.push("an overdue loan to return");
     }
     return added.length ? `Gave ${me.name} ${added.join(", ")}.` : `${me.name} is already in the story.`;
+  },
+});
+
+/** Seeding helpers for demo photos (scripts/seed-photos.mjs). Internal: never callable from a client. */
+export const photoUploadUrl = internalMutation({
+  args: {},
+  returns: v.string(),
+  handler: async (ctx) => await ctx.storage.generateUploadUrl(),
+});
+
+/** Active listings with this exact name (each gets its own uploaded copy, so edits never affect another). */
+export const toolsNamed = internalQuery({
+  args: { toolName: v.string() },
+  returns: v.array(v.id("tools")),
+  handler: async (ctx, { toolName }) =>
+    (await ctx.db.query("tools").withIndex("by_removedAt", (q) => q.eq("removedAt", undefined)).take(500))
+      .filter((t) => t.name === toolName)
+      .map((t) => t._id),
+});
+
+/** Replaces a listing's photos with one seeded photo. */
+export const setToolPhoto = internalMutation({
+  args: { toolId: v.id("tools"), storageId: v.id("_storage") },
+  returns: v.null(),
+  handler: async (ctx, { toolId, storageId }) => {
+    const tool = await ctx.db.get("tools", toolId);
+    if (!tool) {
+      await ctx.storage.delete(storageId);
+      return null;
+    }
+    for (const old of tool.photos ?? []) await ctx.storage.delete(old);
+    await ctx.db.patch("tools", toolId, { photos: [storageId] });
+    return null;
   },
 });

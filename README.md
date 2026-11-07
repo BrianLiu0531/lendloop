@@ -70,7 +70,7 @@ A neighborhood tool-lending board: neighbors list tools they're happy to lend, r
 
 **Extras beyond the brief:** approving a request auto-declines overlapping requests and notifies those borrowers; double booking is impossible (checked inside a serializable transaction); per-user rate limits; an admin audit log; a dead-letter queue with a one-click retry; a watchdog that notices when the daily job *stops running* (not just when it fails); Mailpit so every email can be inspected locally; seed data; 41 automated tests.
 
-**Listing photos, privacy-first.** Photos are resized and re-encoded to WebP *in the browser* before upload, which strips EXIF metadata. Phone photos carry GPS coordinates, and on a neighborhood app those coordinates point at someone's home. The server re-checks type, size (≤ 3 MB) and count (≤ 4). You can only attach files you uploaded yourself (tracked in `photoUploads`). Photos removed from a listing, or belonging to a deleted listing, are deleted from storage, and abandoned uploads are garbage-collected by a cron. Tools without photos get a 3D category illustration from Microsoft's open-source [Fluent Emoji](https://github.com/microsoft/fluentui-emoji) (MIT).
+**Listing photos, privacy-first.** Photos are resized and re-encoded to WebP *in the browser* before upload, which strips EXIF metadata. Phone photos carry GPS coordinates, and on a neighborhood app those coordinates point at someone's home. The server re-checks type, size (≤ 3 MB) and count (≤ 4). You can only attach files you uploaded yourself (tracked in `photoUploads`). Photos removed from a listing, or belonging to a deleted listing, are deleted from storage, and abandoned uploads are garbage-collected by a cron. Demo listings use openly licensed photos (credits in [`docs/photo-credits.md`](docs/photo-credits.md); `node scripts/seed-photos.mjs` loads them). Tools without photos get a 3D category illustration from Microsoft's open-source [Fluent Emoji](https://github.com/microsoft/fluentui-emoji) (MIT).
 
 ---
 
@@ -132,6 +132,7 @@ Sign in, then optionally load demo data:
 
 ```bash
 npm run seed                                            # 5 neighbors, 12 tools, a few loans (one overdue)
+node scripts/seed-photos.mjs                         # real photos for the demo listings
 npx convex run seed:involve '{"email":"you@example.com"}' # puts YOU in the story: an incoming request, an active loan, an overdue one (idempotent)
 ```
 
