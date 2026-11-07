@@ -2,7 +2,8 @@ import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
 import { ArrowRight, BellRing, CalendarCheck2, HandHeart, ShieldCheck } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { PublicToolList } from "@/components/public-tool-list";
-import { ButtonLink, buttonClass } from "@/components/ui/primitives";
+import { buttonClass } from "@/components/ui/button-class";
+import { ButtonLink } from "@/components/ui/primitives";
 
 const STEPS = [
   {
