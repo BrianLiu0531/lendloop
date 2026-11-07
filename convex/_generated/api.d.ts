@@ -28,6 +28,7 @@ import type * as lib_privacy from "../lib/privacy.js";
 import type * as lib_rateLimits from "../lib/rateLimits.js";
 import type * as lib_validators from "../lib/validators.js";
 import type * as loans from "../loans.js";
+import type * as photos from "../photos.js";
 import type * as seed from "../seed.js";
 import type * as tools from "../tools.js";
 import type * as users from "../users.js";
@@ -59,6 +60,7 @@ declare const fullApi: ApiFromModules<{
   "lib/rateLimits": typeof lib_rateLimits;
   "lib/validators": typeof lib_validators;
   loans: typeof loans;
+  photos: typeof photos;
   seed: typeof seed;
   tools: typeof tools;
   users: typeof users;

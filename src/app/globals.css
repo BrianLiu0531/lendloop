@@ -38,6 +38,16 @@
   --shadow-lift: 0 2px 4px rgb(29 39 33 / 0.05), 0 12px 32px -10px rgb(29 39 33 / 0.18);
 
   --animate-fade-up: fade-up 0.35s ease-out both;
+  --animate-float: float 6s ease-in-out infinite;
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0) rotate(var(--tilt, 0deg));
+    }
+    50% {
+      transform: translateY(-12px) rotate(var(--tilt, 0deg));
+    }
+  }
   @keyframes fade-up {
     from {
       opacity: 0;
@@ -78,4 +88,10 @@
 .bg-grain {
   background-image: radial-gradient(rgb(29 39 33 / 0.06) 1px, transparent 1px);
   background-size: 18px 18px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float {
+    animation: none;
+  }
 }

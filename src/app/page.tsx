@@ -30,6 +30,68 @@ const STEPS = [
   },
 ];
 
+/** Floating 3D illustrations (Microsoft Fluent Emoji, MIT). Decorative only. */
+const HERO_ART = [
+  {
+    src: "/art/toolbox.png",
+    className: "left-[8%] top-[6%] size-36",
+    tilt: "-8deg",
+    delay: "0s",
+    tint: "bg-[#fde9d9]",
+  },
+  {
+    src: "/art/camping.png",
+    className: "right-[4%] top-[2%] size-28",
+    tilt: "6deg",
+    delay: "-1.5s",
+    tint: "bg-[#e1f0e2]",
+  },
+  {
+    src: "/art/ladders.png",
+    className: "left-[2%] bottom-[8%] size-28",
+    tilt: "5deg",
+    delay: "-3s",
+    tint: "bg-[#f3ece0]",
+  },
+  {
+    src: "/art/sports.png",
+    className: "right-[10%] bottom-[2%] size-32",
+    tilt: "-5deg",
+    delay: "-4.5s",
+    tint: "bg-[#eee6f6]",
+  },
+  {
+    src: "/art/handshake.png",
+    className: "left-[38%] top-[36%] size-32",
+    tilt: "0deg",
+    delay: "-2.2s",
+    tint: "bg-brand-soft",
+  },
+];
+
+function HeroArt() {
+  return (
+    <div className="relative hidden aspect-square lg:block" aria-hidden>
+      <div className="absolute inset-[12%] rounded-full bg-gradient-to-br from-brand-soft via-surface to-[#fdf3d7] blur-2xl" />
+      {HERO_ART.map((a) => (
+        <div
+          key={a.src}
+          className={`absolute flex items-center justify-center rounded-[2rem] shadow-[var(--shadow-lift)] animate-float ${a.tint} ${a.className}`}
+          style={{ ["--tilt" as string]: a.tilt, animationDelay: a.delay }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element -- static decorative art */}
+          <img
+            src={a.src}
+            alt=""
+            className="size-[72%] drop-shadow-[0_10px_12px_rgba(29,39,33,0.2)]"
+            draggable={false}
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function LandingPage() {
   return (
     <div className="flex min-h-full flex-col">
@@ -63,43 +125,46 @@ export default function LandingPage() {
             className="bg-grain absolute inset-0 [mask-image:linear-gradient(to_bottom,black,transparent)]"
             aria-hidden
           />
-          <div className="relative mx-auto max-w-6xl px-5 pb-20 pt-14 sm:px-8 sm:pt-24">
-            <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3 py-1 text-sm text-ink-soft">
-              <span className="size-1.5 rounded-full bg-brand" aria-hidden />A
-              tool library for your street
-            </p>
-            <h1 className="max-w-3xl font-display text-5xl leading-[1.05] tracking-tight text-ink sm:text-7xl">
-              Borrow what you need.{" "}
-              <span className="italic text-brand">
-                Lend what you don&apos;t.
-              </span>
-            </h1>
-            <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-soft">
-              LendLoop is a neighborhood lending board. Share the tools
-              gathering dust in your shed, borrow the ones you need for a
-              weekend — no buying, no storing, no awkward follow-ups.
-            </p>
-            <div className="mt-9 flex flex-wrap items-center gap-3">
-              <Suspense fallback={<div className="h-12 w-64" aria-hidden />}>
-                <Show when="signed-out">
-                  <SignInButton mode="modal" forceRedirectUrl="/board">
-                    <button className={buttonClass("primary", "lg")}>
-                      Sign in to lend or borrow
+          <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-5 pb-20 pt-14 sm:px-8 sm:pt-24 lg:grid-cols-[1fr_26rem]">
+            <div>
+              <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3 py-1 text-sm text-ink-soft">
+                <span className="size-1.5 rounded-full bg-brand" aria-hidden />A
+                tool library for your street
+              </p>
+              <h1 className="max-w-3xl font-display text-5xl leading-[1.05] tracking-tight text-ink sm:text-7xl">
+                Borrow what you need.{" "}
+                <span className="italic text-brand">
+                  Lend what you don&apos;t.
+                </span>
+              </h1>
+              <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-soft">
+                LendLoop is a neighborhood lending board. Share the tools
+                gathering dust in your shed, borrow the ones you need for a
+                weekend — no buying, no storing, no awkward follow-ups.
+              </p>
+              <div className="mt-9 flex flex-wrap items-center gap-3">
+                <Suspense fallback={<div className="h-12 w-64" aria-hidden />}>
+                  <Show when="signed-out">
+                    <SignInButton mode="modal" forceRedirectUrl="/board">
+                      <button className={buttonClass("primary", "lg")}>
+                        Sign in to lend or borrow
+                        <ArrowRight className="size-4" aria-hidden />
+                      </button>
+                    </SignInButton>
+                  </Show>
+                  <Show when="signed-in">
+                    <ButtonLink href="/board" size="lg">
+                      Go to the board
                       <ArrowRight className="size-4" aria-hidden />
-                    </button>
-                  </SignInButton>
-                </Show>
-                <Show when="signed-in">
-                  <ButtonLink href="/board" size="lg">
-                    Go to the board
-                    <ArrowRight className="size-4" aria-hidden />
-                  </ButtonLink>
-                </Show>
-              </Suspense>
-              <a href="#shelf" className={buttonClass("ghost", "lg")}>
-                See what&apos;s available
-              </a>
+                    </ButtonLink>
+                  </Show>
+                </Suspense>
+                <a href="#shelf" className={buttonClass("ghost", "lg")}>
+                  See what&apos;s available
+                </a>
+              </div>
             </div>
+            <HeroArt />
           </div>
         </section>
 

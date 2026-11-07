@@ -33,6 +33,8 @@ export default defineSchema({
     category: vCategory,
     condition: vCondition,
     description: v.string(),
+    /** File-storage ids, cover first. Only signed-in users can see them. */
+    photos: v.optional(v.array(v.id("_storage"))),
     /** Soft delete keeps loan history intact; removed tools are never listed. */
     removedAt: v.optional(v.number()),
     removedBy: v.optional(v.id("users")),
@@ -41,6 +43,16 @@ export default defineSchema({
     .index("by_ownerId", ["ownerId"])
     .index("by_removedAt", ["removedAt"])
     .index("by_removedAt_and_category", ["removedAt", "category"]),
+
+  /**
+   * Who uploaded each not-yet-attached photo. A listing may only attach
+   * uploads made by its owner; rows are deleted once attached, and stale
+   * ones (abandoned forms) are garbage-collected with their files.
+   */
+  photoUploads: defineTable({
+    storageId: v.id("_storage"),
+    userId: v.id("users"),
+  }).index("by_storageId", ["storageId"]),
 
   loans: defineTable({
     toolId: v.id("tools"),

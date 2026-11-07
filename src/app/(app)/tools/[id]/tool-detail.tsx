@@ -7,13 +7,21 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { api } from "../../../../../convex/_generated/api";
 import { AvailabilityBadge } from "@/components/availability-badge";
-import { CategoryIcon } from "@/components/category-icon";
+import { CategoryArt } from "@/components/category-icon";
 import { LoanStatusBadge, rawStatusPhase } from "@/components/loan-status";
 import { RequestDialog } from "@/components/request-dialog";
 import { TrustedMark } from "@/components/trusted-badge";
-import { Badge, Button, ButtonLink, Card, EmptyState, Skeleton } from "@/components/ui/primitives";
+import {
+  Badge,
+  Button,
+  ButtonLink,
+  Card,
+  EmptyState,
+  Skeleton,
+} from "@/components/ui/primitives";
 import { useToday } from "@/hooks/use-today";
-import { CATEGORY, CONDITION } from "@/lib/catalog";
+import { CATEGORY, CONDITION, type Category } from "@/lib/catalog";
+import { cn } from "@/lib/cn";
 import { dateRange, nights } from "@/lib/format";
 
 export function ToolDetail() {
@@ -50,49 +58,71 @@ export function ToolDetail() {
 
   return (
     <div className="animate-fade-up">
-      <Link href="/board" className="mb-6 inline-flex items-center gap-1.5 text-sm text-ink-soft hover:text-ink">
+      <Link
+        href="/board"
+        className="mb-6 inline-flex items-center gap-1.5 text-sm text-ink-soft hover:text-ink"
+      >
         <ArrowLeft className="size-4" aria-hidden /> Back to the board
       </Link>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
-        <Card className="p-6 sm:p-8">
-          <div className="flex items-start gap-5">
-            <CategoryIcon category={tool.category} size="lg" />
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <AvailabilityBadge availability={tool.availability} />
-                {tool.removed && <Badge tone="danger">Removed</Badge>}
+        <Card className="overflow-hidden">
+          <Gallery
+            photos={tool.photos}
+            category={tool.category}
+            name={tool.name}
+          />
+          <div className="p-6 sm:p-8">
+            <div className="flex items-start gap-5">
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <AvailabilityBadge availability={tool.availability} />
+                  {tool.removed && <Badge tone="danger">Removed</Badge>}
+                </div>
+                <h1 className="mt-2 font-display text-3xl tracking-tight sm:text-4xl">
+                  {tool.name}
+                </h1>
+                <p className="mt-1 text-ink-soft">
+                  {CATEGORY[tool.category].label} ·{" "}
+                  {CONDITION[tool.condition].label}
+                  <span className="text-ink-faint">
+                    {" "}
+                    — {CONDITION[tool.condition].hint.toLowerCase()}
+                  </span>
+                </p>
               </div>
-              <h1 className="mt-2 font-display text-3xl tracking-tight sm:text-4xl">{tool.name}</h1>
-              <p className="mt-1 text-ink-soft">
-                {CATEGORY[tool.category].label} · {CONDITION[tool.condition].label}
-                <span className="text-ink-faint"> — {CONDITION[tool.condition].hint.toLowerCase()}</span>
+            </div>
+
+            <div className="mt-8 border-t border-line pt-6">
+              <h2 className="text-sm font-medium uppercase tracking-wide text-ink-faint">
+                About this tool
+              </h2>
+              <p className="mt-2 whitespace-pre-line leading-relaxed text-ink-soft">
+                {tool.description || "The owner didn't add a description."}
               </p>
             </div>
-          </div>
 
-          <div className="mt-8 border-t border-line pt-6">
-            <h2 className="text-sm font-medium uppercase tracking-wide text-ink-faint">About this tool</h2>
-            <p className="mt-2 whitespace-pre-line leading-relaxed text-ink-soft">
-              {tool.description || "The owner didn't add a description."}
-            </p>
-          </div>
-
-          <div className="mt-8 border-t border-line pt-6">
-            <h2 className="flex items-center gap-1.5 text-sm font-medium uppercase tracking-wide text-ink-faint">
-              <CalendarDays className="size-4" aria-hidden /> Booked dates
-            </h2>
-            {upcoming.length === 0 ? (
-              <p className="mt-2 text-ink-soft">No bookings yet — any dates are open.</p>
-            ) : (
-              <ul className="mt-3 flex flex-wrap gap-2">
-                {upcoming.map((b) => (
-                  <li key={b.startDate} className="rounded-lg bg-sunken px-3 py-1.5 text-sm text-ink-soft">
-                    {dateRange(b.startDate, b.endDate)}
-                  </li>
-                ))}
-              </ul>
-            )}
+            <div className="mt-8 border-t border-line pt-6">
+              <h2 className="flex items-center gap-1.5 text-sm font-medium uppercase tracking-wide text-ink-faint">
+                <CalendarDays className="size-4" aria-hidden /> Booked dates
+              </h2>
+              {upcoming.length === 0 ? (
+                <p className="mt-2 text-ink-soft">
+                  No bookings yet — any dates are open.
+                </p>
+              ) : (
+                <ul className="mt-3 flex flex-wrap gap-2">
+                  {upcoming.map((b) => (
+                    <li
+                      key={b.startDate}
+                      className="rounded-lg bg-sunken px-3 py-1.5 text-sm text-ink-soft"
+                    >
+                      {dateRange(b.startDate, b.endDate)}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
         </Card>
 
@@ -104,11 +134,17 @@ export function ToolDetail() {
               {tool.owner.trustedLender && <TrustedMark />}
             </p>
             {tool.owner.trustedLender && (
-              <p className="mt-1 text-sm text-trust">Trusted Lender — verified by a LendLoop admin</p>
+              <p className="mt-1 text-sm text-trust">
+                Trusted Lender — verified by a LendLoop admin
+              </p>
             )}
             <div className="mt-6">
               {tool.isMine ? (
-                <ButtonLink href={`/me/listings?edit=${tool._id}`} variant="secondary" className="w-full">
+                <ButtonLink
+                  href={`/me/listings?edit=${tool._id}`}
+                  variant="secondary"
+                  className="w-full"
+                >
                   <Pencil className="size-4" aria-hidden /> Edit listing
                 </ButtonLink>
               ) : tool.removed ? null : openRequest ? (
@@ -116,12 +152,20 @@ export function ToolDetail() {
                   <Button className="w-full" disabled>
                     Request pending
                   </Button>
-                  <ButtonLink href={`/me/requests?loan=${openRequest._id}`} variant="ghost" className="w-full">
+                  <ButtonLink
+                    href={`/me/requests?loan=${openRequest._id}`}
+                    variant="ghost"
+                    className="w-full"
+                  >
                     View my request
                   </ButtonLink>
                 </div>
               ) : (
-                <Button className="w-full" size="lg" onClick={() => setRequestOpen(true)}>
+                <Button
+                  className="w-full"
+                  size="lg"
+                  onClick={() => setRequestOpen(true)}
+                >
                   Request to borrow
                 </Button>
               )}
@@ -130,13 +174,23 @@ export function ToolDetail() {
 
           {tool.myLoans.length > 0 && (
             <Card className="p-6">
-              <h2 className="text-sm font-medium uppercase tracking-wide text-ink-faint">Your history with this tool</h2>
+              <h2 className="text-sm font-medium uppercase tracking-wide text-ink-faint">
+                Your history with this tool
+              </h2>
               <ul className="mt-3 space-y-2.5">
                 {tool.myLoans.map((l) => (
-                  <li key={l._id} className="flex items-center justify-between gap-2 text-sm">
-                    <Link href={`/me/requests?loan=${l._id}`} className="text-ink-soft hover:text-ink">
+                  <li
+                    key={l._id}
+                    className="flex items-center justify-between gap-2 text-sm"
+                  >
+                    <Link
+                      href={`/me/requests?loan=${l._id}`}
+                      className="text-ink-soft hover:text-ink"
+                    >
                       {dateRange(l.startDate, l.endDate)}{" "}
-                      <span className="text-ink-faint">· {nights(l.startDate, l.endDate)}</span>
+                      <span className="text-ink-faint">
+                        · {nights(l.startDate, l.endDate)}
+                      </span>
                     </Link>
                     <LoanStatusBadge phase={rawStatusPhase(l.status)} />
                   </li>
@@ -152,12 +206,73 @@ export function ToolDetail() {
           open={requestOpen}
           onClose={() => {
             setRequestOpen(false);
-            if (params.get("request")) router.replace(`/tools/${tool._id}`, { scroll: false });
+            if (params.get("request"))
+              router.replace(`/tools/${tool._id}`, { scroll: false });
           }}
           tool={{ _id: tool._id, name: tool.name, ownerName: tool.owner.name }}
           today={today}
           booked={tool.booked}
         />
+      )}
+    </div>
+  );
+}
+
+function Gallery({
+  photos,
+  category,
+  name,
+}: {
+  photos: string[];
+  category: Category;
+  name: string;
+}) {
+  const [active, setActive] = useState(0);
+  if (photos.length === 0) {
+    return (
+      <div
+        className={cn(
+          "flex aspect-[16/7] items-center justify-center",
+          CATEGORY[category].tint,
+        )}
+      >
+        <CategoryArt
+          category={category}
+          className="size-36 drop-shadow-[0_16px_20px_rgba(29,39,33,0.18)] sm:size-44"
+        />
+      </div>
+    );
+  }
+  const current = photos[Math.min(active, photos.length - 1)];
+  return (
+    <div className="bg-ink">
+      {/* eslint-disable-next-line @next/next/no-img-element -- Convex storage URL */}
+      <img
+        src={current}
+        alt={`${name}, photo ${active + 1} of ${photos.length}`}
+        className="aspect-[16/10] w-full object-contain"
+      />
+      {photos.length > 1 && (
+        <div className="flex gap-2 bg-surface px-6 pt-4 sm:px-8">
+          {photos.map((url, i) => (
+            <button
+              key={url}
+              type="button"
+              onClick={() => setActive(i)}
+              aria-label={`Show photo ${i + 1}`}
+              aria-current={i === active}
+              className={cn(
+                "size-16 overflow-hidden rounded-lg border-2 transition",
+                i === active
+                  ? "border-brand"
+                  : "border-transparent opacity-70 hover:opacity-100",
+              )}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element -- Convex storage URL */}
+              <img src={url} alt="" className="size-full object-cover" />
+            </button>
+          ))}
+        </div>
       )}
     </div>
   );

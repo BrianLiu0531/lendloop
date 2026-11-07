@@ -47,3 +47,6 @@ next-env.d.ts
 
 # n8n bootstrap scratch (may contain decrypted credentials)
 n8n/.tmp/
+
+.vercel
+.env*

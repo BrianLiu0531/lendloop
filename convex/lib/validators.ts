@@ -69,4 +69,6 @@ export const LIMITS = {
   requestMessage: { max: 300 },
   maxLoanDays: 30,
   maxDaysAhead: 90,
+  /** Photos are re-encoded to WebP in the browser before upload, so 3 MB is generous. */
+  photos: { max: 4, maxBytes: 3 * 1024 * 1024, types: ["image/webp", "image/jpeg", "image/png"] },
 } as const;

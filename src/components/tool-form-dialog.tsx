@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { LIMITS } from "../../convex/lib/validators";
+import { PhotoPicker, type PhotoItem } from "@/components/photo-picker";
 import { Dialog } from "@/components/ui/dialog";
 import { Button, Field, Input, Select, Textarea } from "@/components/ui/primitives";
 import { CATEGORIES, CATEGORY, CONDITION, CONDITIONS, type Category, type Condition } from "@/lib/catalog";
@@ -18,9 +19,10 @@ export type ToolDraft = {
   category: Category;
   condition: Condition;
   description: string;
+  photos: PhotoItem[];
 };
 
-const EMPTY: ToolDraft = { name: "", category: "power_tools", condition: "good", description: "" };
+const EMPTY: ToolDraft = { name: "", category: "power_tools", condition: "good", description: "", photos: [] };
 
 export function ToolFormDialog({
   open,
@@ -49,6 +51,7 @@ function ToolForm({ initial, onDone }: { initial: ToolDraft; onDone: () => void 
   const update = useMutation(api.tools.update);
   const [draft, setDraft] = useState<ToolDraft>(initial);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const set = <K extends keyof ToolDraft>(key: K, value: ToolDraft[K]) => setDraft((d) => ({ ...d, [key]: value }));
@@ -71,6 +74,7 @@ function ToolForm({ initial, onDone }: { initial: ToolDraft; onDone: () => void 
         category: draft.category,
         condition: draft.condition,
         description: draft.description,
+        photos: draft.photos.map((p) => p.id),
       };
       if (draft._id) {
         await update({ toolId: draft._id, ...fields });
@@ -100,6 +104,11 @@ function ToolForm({ initial, onDone }: { initial: ToolDraft; onDone: () => void 
           required
         />
       </Field>
+
+      <div>
+        <p className="mb-1.5 text-sm font-medium text-ink">Photos</p>
+        <PhotoPicker photos={draft.photos} onChange={(photos) => set("photos", photos)} onBusyChange={setUploading} />
+      </div>
 
       <Field label="Category" htmlFor="tool-category">
         <Select id="tool-category" value={draft.category} onChange={(e) => set("category", e.target.value as Category)}>
@@ -156,7 +165,7 @@ function ToolForm({ initial, onDone }: { initial: ToolDraft; onDone: () => void 
         <Button variant="ghost" onClick={onDone}>
           Cancel
         </Button>
-        <Button type="submit" loading={saving}>
+        <Button type="submit" loading={saving} disabled={uploading}>
           {draft._id ? "Save changes" : "List it"}
         </Button>
       </div>

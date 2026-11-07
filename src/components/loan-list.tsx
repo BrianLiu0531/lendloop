@@ -145,7 +145,7 @@ export function LoanCard({
       )}
     >
       <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-start">
-        <CategoryIcon category={loan.toolCategory} />
+        <CategoryIcon category={loan.toolCategory} photoUrl={loan.toolCoverUrl} size="lg" />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <Link href={`/tools/${loan.toolId}`} className="font-display text-lg text-ink hover:text-brand-strong">

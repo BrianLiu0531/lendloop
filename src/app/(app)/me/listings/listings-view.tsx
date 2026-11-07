@@ -40,6 +40,7 @@ export function ListingsView() {
         category: editing.category,
         condition: editing.condition,
         description: editing.description,
+        photos: editing.photos,
       }
     : null;
 
@@ -79,7 +80,7 @@ export function ListingsView() {
             <li key={tool._id} className="animate-fade-up" style={{ animationDelay: `${i * 25}ms` }}>
               <Card className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center">
                 <Link href={`/tools/${tool._id}`} className="flex min-w-0 flex-1 items-center gap-4">
-                  <CategoryIcon category={tool.category} />
+                  <CategoryIcon category={tool.category} photoUrl={tool.photos[0]?.url} size="lg" />
                   <div className="min-w-0">
                     <p className="truncate font-display text-lg text-ink hover:text-brand-strong">{tool.name}</p>
                     <p className="text-sm text-ink-faint">

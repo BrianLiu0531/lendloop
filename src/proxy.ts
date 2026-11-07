@@ -15,7 +15,8 @@ export default clerkMiddleware({
   contentSecurityPolicy: {
     directives: {
       "connect-src": [convexUrl, convexWs].filter(Boolean),
-      "img-src": ["https://img.clerk.com"],
+      // Convex storage serves listing photos; blob: is the local preview before upload.
+      "img-src": ["https://img.clerk.com", convexUrl, "blob:"].filter(Boolean),
     },
   },
 });

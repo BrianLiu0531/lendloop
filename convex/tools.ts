@@ -11,6 +11,7 @@ import { rateLimiter } from "./lib/rateLimits";
 import { LIMITS, vCategory, vCondition } from "./lib/validators";
 import { publishLoanEvent } from "./lib/outbox";
 import { publicName } from "./lib/privacy";
+import { attachPhotos, coverUrl, deletePhotos, photoItems, photoUrls } from "./photos";
 
 const MAX_LIST = 200;
 
@@ -75,6 +76,7 @@ export const list = userQuery({
           owner: { name: publicName(owner), trustedLender: owner?.trustedLender ?? false },
           availability: computeAvailability(approved, today),
           iHaveRequested: myPending !== null,
+          coverUrl: await coverUrl(ctx, tool.photos),
         };
       }),
     );
@@ -106,6 +108,7 @@ export const get = userQuery({
       condition: tool.condition,
       description: tool.description,
       removed: tool.removedAt !== undefined,
+      photos: await photoUrls(ctx, tool.photos),
       isMine: tool.ownerId === ctx.viewer._id,
       owner: { name: publicName(owner), trustedLender: owner?.trustedLender ?? false },
       availability: computeAvailability(approved, today),
@@ -148,6 +151,7 @@ export const mine = userQuery({
             description: tool.description,
             availability: computeAvailability(approved, today),
             pendingRequests: pending.length,
+            photos: await photoItems(ctx, tool.photos),
           };
         }),
     );
@@ -159,6 +163,8 @@ const toolFields = {
   category: vCategory,
   condition: vCondition,
   description: v.string(),
+  /** Uploaded via photos.generateUploadUrl + registerUpload; cover first. */
+  photos: v.optional(v.array(v.id("_storage"))),
 };
 
 export const create = userMutation({
@@ -167,6 +173,7 @@ export const create = userMutation({
   handler: async (ctx, args) => {
     await rateLimiter.limit(ctx, "createTool", { key: ctx.viewer._id, throws: true });
     const { name, description } = cleanFields(args);
+    const photos = await attachPhotos(ctx, ctx.viewer, args.photos ?? []);
     // ownerId comes from the verified identity, never from the client.
     return await ctx.db.insert("tools", {
       ownerId: ctx.viewer._id,
@@ -174,6 +181,7 @@ export const create = userMutation({
       description,
       category: args.category,
       condition: args.condition,
+      photos,
     });
   },
 });
@@ -186,11 +194,15 @@ export const update = userMutation({
     if (!tool) throw notFound("Listing");
     enforce(canEditTool(ctx.viewer, tool));
     const { name, description } = cleanFields(fields);
+    // Omitting `photos` leaves them untouched; passing a list replaces them.
+    const photos =
+      fields.photos === undefined ? tool.photos : await attachPhotos(ctx, ctx.viewer, fields.photos, tool.photos);
     await ctx.db.patch("tools", toolId, {
       name,
       description,
       category: fields.category,
       condition: fields.condition,
+      photos,
     });
     return null;
   },
@@ -211,10 +223,14 @@ export const remove = userMutation({
     const asAdmin = tool.ownerId !== ctx.viewer._id;
     const cleanReason = reason?.trim().slice(0, 200) || undefined;
 
+    // Photos are deleted outright: a removed listing keeps its name for loan
+    // history, but nothing else needs to linger.
+    await deletePhotos(ctx, tool.photos);
     await ctx.db.patch("tools", toolId, {
       removedAt: Date.now(),
       removedBy: ctx.viewer._id,
       removalReason: cleanReason,
+      photos: [],
     });
     await closeOpenLoans(ctx, tool, asAdmin ? "Listing removed by a moderator" : "Listing removed by its owner");
 

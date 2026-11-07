@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { coverUrl } from "./photos";
 import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
 import { assertValidLoanRange, isIsoDate, rangesOverlap, toIsoDate } from "./lib/dates";
@@ -45,6 +46,7 @@ async function toLoanRow(ctx: QueryCtx, loan: Doc<"loans">, today: string, count
     toolId: loan.toolId,
     toolName: tool?.name ?? "Removed tool",
     toolCategory: tool?.category ?? "other",
+    toolCoverUrl: await coverUrl(ctx, tool?.photos),
     counterpart: {
       name: publicName(counterpart),
       trustedLender: counterpart?.trustedLender ?? false,

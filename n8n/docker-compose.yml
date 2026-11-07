@@ -90,6 +90,19 @@ services:
       MP_SMTP_AUTH_ACCEPT_ANY: "true"
       MP_SMTP_AUTH_ALLOW_INSECURE: "true"
 
+  # Optional: public HTTPS URL for n8n so a cloud Convex deployment can reach the
+  # webhook. Only the /webhook/ path is useful from outside; every request on it
+  # is still HMAC-verified. Quick tunnels get a new random URL on each start.
+  #   docker compose --profile tunnel up -d tunnel
+  #   docker compose logs tunnel | grep trycloudflare.com
+  tunnel:
+    image: cloudflare/cloudflared:2026.10.0
+    profiles: [tunnel]
+    restart: unless-stopped
+    command: tunnel --no-autoupdate --url http://n8n:5678
+    depends_on:
+      - n8n
+
 volumes:
   n8n_data:
   n8n_db:

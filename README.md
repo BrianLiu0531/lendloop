@@ -59,14 +59,16 @@ A neighborhood tool-lending board: neighbors list tools they're happy to lend, r
 | --- | --- |
 | **Board** `/board` | All tools with live availability (*Available*, *Free until Nov 12*, *On loan until…*, *Overdue*). Filter by category (indexed, server-side) and search. |
 | **Tool** `/tools/[id]` | Details, condition, owner's first name with a **Trusted Lender** badge, booked date ranges, and your history with the tool. Request a date range (validated live, re-validated on the server). |
-| **My listings** `/me/listings` | Create, edit and delete your own tools, with a count of waiting requests per tool. |
+| **My listings** `/me/listings` | Create, edit and delete your own tools (up to 4 photos each, drag & drop, choose the cover), with a count of waiting requests per tool. |
 | **My requests** `/me/requests` | Your borrow requests by status; cancel before pick-up. |
 | **Incoming** `/me/incoming` | Requests for your tools: approve, decline, mark returned. Nav badge shows how many are waiting. |
 | **Admin** `/admin` | Remove any listing (with a reason), view all loans, mark Trusted Lenders, change roles, an **automation health** dashboard, and an audit log. |
 
 **Automation activity on every loan (bonus).** Each loan row shows what the automation last did ("Owner notified 3 min ago", "Reminder sent 2 days ago (2 so far)"). Expanding it shows a full timeline that mixes status changes with notification and reminder events.
 
-**Extras beyond the brief:** approving a request auto-declines overlapping requests and notifies those borrowers; double booking is impossible (checked inside a serializable transaction); per-user rate limits; an admin audit log; a dead-letter queue with a one-click retry; a watchdog that notices when the daily job *stops running* (not just when it fails); Mailpit so every email can be inspected locally; seed data; 34 automated tests.
+**Extras beyond the brief:** approving a request auto-declines overlapping requests and notifies those borrowers; double booking is impossible (checked inside a serializable transaction); per-user rate limits; an admin audit log; a dead-letter queue with a one-click retry; a watchdog that notices when the daily job *stops running* (not just when it fails); Mailpit so every email can be inspected locally; seed data; 41 automated tests.
+
+**Listing photos, privacy-first.** Photos are resized and re-encoded to WebP *in the browser* before upload, which strips EXIF metadata. Phone photos carry GPS coordinates, and on a neighborhood app those coordinates point at someone's home. The server re-checks type, size (≤ 3 MB) and count (≤ 4). You can only attach files you uploaded yourself (tracked in `photoUploads`). Photos removed from a listing, or belonging to a deleted listing, are deleted from storage, and abandoned uploads are garbage-collected by a cron. Tools without photos get a 3D category illustration from Microsoft's open-source [Fluent Emoji](https://github.com/microsoft/fluentui-emoji) (MIT).
 
 ---
 
@@ -319,8 +321,8 @@ sequenceDiagram
 
 | Audience | Sees | Never sees |
 | --- | --- | --- |
-| Anonymous visitor | tool **name + category** | owners, descriptions, availability, ids |
-| Signed-in neighbor | tool details, owner **first name**, trusted badge, booked **date ranges** | other users' emails, who booked which dates |
+| Anonymous visitor | tool **name + category** | owners, descriptions, photos, availability, ids |
+| Signed-in neighbor | tool details and **photos** (EXIF/GPS stripped), owner **first name**, trusted badge, booked **date ranges** | other users' emails, who booked which dates |
 | Loan counterpart | first name, dates, the borrower's note (lender only); **email only while the loan is approved**, so the two can arrange the hand-over | contact details before consent (pending) or after the loan is closed |
 | Admin | names and emails for moderation | — |
 | n8n (loan event) | recipient email + first name, counterpart first name, tool name, dates, status, deep link | descriptions, free-text notes, counterpart's email |
@@ -391,10 +393,11 @@ All of these were exercised against the running stack: stopping Mailpit mid-flow
 npm run check   # tsc (app + convex) → eslint → vitest
 ```
 
-34 tests in `convex/` with **convex-test** (an in-memory Convex) and Vitest:
+41 tests in `convex/` with **convex-test** (an in-memory Convex) and Vitest:
 
 - **`lib/policy.test.ts`**: the full access matrix and state guards; date rules (calendar validity, inclusive overlap, timezone slack).
 - **`rbac.test.ts`**: the same rules through the real public API as five identities: public data exposure, owner-only edits, admin removal (audited), self-borrow, lender-only approval, participant-only timelines, contact details shared only while approved, overlap auto-decline and double-booking prevention, one outbox event per state change, verified-email admin bootstrap.
+- **`photos.test.ts`**: only your own uploads can be attached, non-images and oversized files are rejected *and deleted*, the 4-photo cap, and storage cleanup when photos are dropped or a listing is removed.
 - **`automation.test.ts`**: HTTP signature rejection (missing, wrong key, stale, query-swapped), payload minimization (asserts the private note, the description and the counterpart's email are absent), idempotent write-backs, the `sent`-is-terminal rule, outbound signing verified against an independent recomputation, retry vs dead classification, and giving up after `MAX_ATTEMPTS`.
 
 The n8n workflows were tested end to end against the local stack (signed delivery, duplicate, tampered and stale requests, SMTP outage and recovery, idempotent re-runs).
