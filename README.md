@@ -4,6 +4,8 @@
 
 A neighborhood tool-lending board: neighbors list tools they're happy to lend, request to borrow each other's for a date range, and get automated notifications and overdue reminders through n8n.
 
+**Live demo:** https://lendloop-brianliu.vercel.app. Sign up with any email; the board comes seeded with neighbors and tools.
+
 **Stack:** Next.js 16 (App Router) · Clerk · Convex · n8n (self-hosted, Docker) · TypeScript · Tailwind CSS v4
 
 ![The board](docs/screenshots/02-board.png)
@@ -440,7 +442,19 @@ src/
 
 ## Running this in production
 
-What I would change before real users touch it:
+### How the live demo is wired
+
+| Piece | Where |
+| --- | --- |
+| Next.js | Vercel (`lendloop-brianliu.vercel.app`) |
+| Convex | Convex Cloud production deployment |
+| Clerk | development instance. A production instance needs a custom domain, so the demo shows Clerk's "development mode" badge. |
+| n8n + Postgres | Docker on my machine, reachable through a Cloudflare quick tunnel (`docker compose --profile tunnel up -d tunnel`). Only `/webhook/*` is useful from outside, and every request on it is HMAC-verified. |
+| Email | Mailpit, so demo notifications are captured instead of sent to real inboxes |
+
+This is honest demo plumbing, not production. When my machine is off, Convex's outbox keeps retrying with backoff and then dead-letters the event (visible and retryable on the Admin page), and the watchdog flags the missed daily sweep. A quick tunnel gets a new URL on every start, so `N8N_LOAN_EVENTS_WEBHOOK_URL` has to be updated in Convex each time.
+
+### What I would change before real users touch it
 
 1. **Deployments**: Convex production deployment, Vercel for Next.js, Clerk production instance. Run n8n on a managed container service (ECS Fargate or Fly) or n8n Cloud, behind TLS. n8n's webhook URL must be HTTPS and public (no tunnels).
 2. **n8n hardening**: queue mode (Redis + workers) so a slow SMTP doesn't block the webhook process; **external task runners** for Code-node isolation (2.x recommends this). Restrict `N8N_BLOCK_ENV_ACCESS_IN_NODE` to the specific env vars needed, or move signing keys into a secrets backend (Vault, AWS Secrets Manager) through n8n's external secrets. Put the editor behind SSO/VPN and expose only `/webhook/*` publicly. Back up Postgres and the encryption key.

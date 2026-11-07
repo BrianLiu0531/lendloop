@@ -73,11 +73,16 @@ services:
       LENDLOOP_SMTP_PORT: ${LENDLOOP_SMTP_PORT:-1025}
       LENDLOOP_SMTP_USER: ${LENDLOOP_SMTP_USER:-}
       LENDLOOP_SMTP_PASSWORD: ${LENDLOOP_SMTP_PASSWORD:-}
+      # Networks with TLS inspection (antivirus HTTPS scanning, corporate
+      # proxies) re-sign certificates with their own root. Drop that root in
+      # n8n/certs/ and point this at it, e.g. /extra-certs/extra-ca.pem.
+      NODE_EXTRA_CA_CERTS: ${LENDLOOP_EXTRA_CA_CERT:-}
     extra_hosts:
       # Lets n8n reach a Convex local backend running on the host (npx convex dev).
       - "host.docker.internal:host-gateway"
     volumes:
       - n8n_data:/home/node/.n8n
+      - ./certs:/extra-certs:ro
       - ./workflows:/workflows:ro
 
   mailpit:
@@ -100,6 +105,10 @@ services:
     profiles: [tunnel]
     restart: unless-stopped
     command: tunnel --no-autoupdate --url http://n8n:5678
+    environment:
+      SSL_CERT_DIR: /etc/ssl/certs:/extra-certs # see NODE_EXTRA_CA_CERTS above
+    volumes:
+      - ./certs:/extra-certs:ro
     depends_on:
       - n8n
 
