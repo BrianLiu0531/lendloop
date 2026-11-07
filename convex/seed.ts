@@ -11,6 +11,7 @@ import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 import { internalMutation, type MutationCtx } from "./_generated/server";
 import { addDays, toIsoDate } from "./lib/dates";
+import { publishLoanEvent } from "./lib/outbox";
 import type { Category, Condition } from "./lib/validators";
 
 const NEIGHBORS = [
@@ -95,7 +96,15 @@ export const run = internalMutation({
   },
 });
 
-/** Puts the signed-in demo account into the story: an incoming request, an active loan and an overdue one. */
+/**
+ * Puts a real signed-in account into the story. Idempotent: run it again any
+ * time and it only adds what's missing.
+ *  - lending: a Circular saw with a pending request from Omar (with a note)
+ *  - lending: a Socket set currently out with Lena (contact details shown)
+ *  - borrowing: Maya's drill, two days overdue
+ * Request and approval go through the outbox, so n8n sends the emails and
+ * each loan shows real automation activity.
+ */
 export const involve = internalMutation({
   args: { email: v.string() },
   handler: async (ctx, { email }) => {
@@ -103,37 +112,64 @@ export const involve = internalMutation({
     if (!me) throw new Error(`No user with email ${email} — sign in to the app once first.`);
     const maya = await upsertNeighbor(ctx, NEIGHBORS[0]);
     const omar = await upsertNeighbor(ctx, NEIGHBORS[1]);
+    const lena = await upsertNeighbor(ctx, NEIGHBORS[2]);
     const today = toIsoDate(Date.now());
+    const added: string[] = [];
 
-    const myTool = await ctx.db.insert("tools", {
-      ownerId: me._id,
-      name: "Circular saw",
-      category: "power_tools",
-      condition: "good",
-      description: "7¼\" blade, with a spare blade and the rip fence.",
-    });
-    await ctx.db.insert("loans", {
-      toolId: myTool,
-      lenderId: me._id,
-      borrowerId: omar,
-      startDate: addDays(today, 1),
-      endDate: addDays(today, 3),
-      message: "Building a raised garden bed this weekend — happy to drop it back Monday morning!",
-      status: "pending",
-    });
+    const myTools = await ctx.db.query("tools").withIndex("by_ownerId", (q) => q.eq("ownerId", me._id)).take(50);
+    async function myTool(name: string, category: Category, condition: Condition, description: string) {
+      const found = myTools.find((t) => t.name === name && !t.removedAt);
+      if (found) return { id: found._id, fresh: false };
+      const id = await ctx.db.insert("tools", { ownerId: me!._id, name, category, condition, description });
+      return { id, fresh: true };
+    }
 
+    const saw = await myTool("Circular saw", "power_tools", "good", "7¼\" blade, with a spare blade and the rip fence.");
+    if (saw.fresh) {
+      const loanId = await ctx.db.insert("loans", {
+        toolId: saw.id,
+        lenderId: me._id,
+        borrowerId: omar,
+        startDate: addDays(today, 2),
+        endDate: addDays(today, 4),
+        message: "Building a raised garden bed this weekend — happy to drop it back Monday morning!",
+        status: "pending",
+      });
+      await publishLoanEvent(ctx, "loan.requested", (await ctx.db.get("loans", loanId))!);
+      added.push("an incoming request");
+    }
+
+    const sockets = await myTool("Socket set (72 pc)", "hand_tools", "like_new", "Metric and imperial, ¼\" and ⅜\" drive, in a carry case.");
+    if (sockets.fresh) {
+      const loanId = await ctx.db.insert("loans", {
+        toolId: sockets.id,
+        lenderId: me._id,
+        borrowerId: lena,
+        startDate: addDays(today, -1),
+        endDate: addDays(today, 3),
+        message: "Bike service day — thank you!",
+        status: "approved",
+        decidedAt: Date.now(),
+      });
+      await publishLoanEvent(ctx, "loan.approved", (await ctx.db.get("loans", loanId))!);
+      added.push("an active loan");
+    }
+
+    const borrowing = await ctx.db.query("loans").withIndex("by_borrowerId", (q) => q.eq("borrowerId", me._id)).take(100);
+    const hasOverdue = borrowing.some((l) => l.status === "approved" && l.endDate < today);
     const mayaTools = await ctx.db.query("tools").withIndex("by_ownerId", (q) => q.eq("ownerId", maya)).take(5);
-    if (mayaTools[0]) {
+    if (!hasOverdue && mayaTools[0]) {
       await ctx.db.insert("loans", {
         toolId: mayaTools[0]._id,
         lenderId: maya,
         borrowerId: me._id,
         startDate: addDays(today, -5),
-        endDate: addDays(today, -1),
+        endDate: addDays(today, -2),
         status: "approved",
         decidedAt: Date.now(),
       });
+      added.push("an overdue loan to return");
     }
-    return `Gave ${me.name} a listing with an incoming request and an overdue loan to return.`;
+    return added.length ? `Gave ${me.name} ${added.join(", ")}.` : `${me.name} is already in the story.`;
   },
 });

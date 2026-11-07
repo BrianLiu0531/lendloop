@@ -28,7 +28,12 @@ export function Dialog({
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    if (open && !el.open) el.showModal();
+    if (open && !el.open) {
+      el.showModal();
+      // showModal() focuses the first focusable element (the close button);
+      // start on the first form field instead when there is one.
+      el.querySelector<HTMLElement>("input, textarea, select")?.focus();
+    }
     if (!open && el.open) el.close();
   }, [open]);
 

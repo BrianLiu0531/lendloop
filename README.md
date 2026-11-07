@@ -6,7 +6,31 @@ A neighborhood tool-lending board: neighbors list tools they're happy to lend, r
 
 **Stack:** Next.js 16 (App Router) · Clerk · Convex · n8n (self-hosted, Docker) · TypeScript · Tailwind CSS v4
 
-<!-- Screenshots: docs/screenshots/*.png -->
+![The board](docs/screenshots/02-board.png)
+
+<table>
+<tr>
+<td width="50%"><img src="docs/screenshots/04-incoming.png" alt="Incoming requests with approve/decline, contact details while approved, and the per-loan automation timeline"><br><sub><b>Incoming requests.</b> Approve or decline. Contact details appear only while a loan is approved. Every loan shows what automation did for it.</sub></td>
+<td width="50%"><img src="docs/screenshots/05-my-requests.png" alt="My requests with a pending request and an overdue loan that has had a reminder"><br><sub><b>My requests.</b> Overdue loans are flagged, and the n8n reminder shows up on the loan.</sub></td>
+</tr>
+<tr>
+<td><img src="docs/screenshots/07-admin-automation.png" alt="Admin automation health: overdue sweep heartbeat, outbox deliveries, workflow failures"><br><sub><b>Admin · Automation.</b> Sweep heartbeat, every outbox delivery with attempt counts, and failures reported by the n8n error workflow.</sub></td>
+<td><img src="docs/screenshots/07-admin-members.png" alt="Admin members list with Trusted Lender controls and roles"><br><sub><b>Admin · Members.</b> Trusted Lender badges and roles, enforced in Convex.</sub></td>
+</tr>
+<tr>
+<td><img src="docs/screenshots/03-tool-detail.png" alt="Tool detail with availability, booked dates and Trusted Lender badge"><br><sub><b>Tool detail.</b> Live availability and booked dates. Owners are shown by first name only.</sub></td>
+<td><img src="docs/screenshots/08-email.png" alt="Approval email sent by n8n, captured in Mailpit"><br><sub><b>Email from n8n</b> (captured locally by Mailpit).</sub></td>
+</tr>
+</table>
+
+<details>
+<summary>More: public landing page, listing form, admin loan oversight</summary>
+
+![Landing page](docs/screenshots/01-landing.png)
+![List a tool](docs/screenshots/06-list-a-tool.png)
+![Admin loans](docs/screenshots/07-admin-loans.png)
+
+</details>
 
 ---
 
@@ -104,7 +128,7 @@ Sign in, then optionally load demo data:
 
 ```bash
 npm run seed                                            # 5 neighbors, 12 tools, a few loans (one overdue)
-npx convex run seed:involve '{"email":"you@example.com"}' # gives YOU an incoming request + an overdue loan
+npx convex run seed:involve '{"email":"you@example.com"}' # puts YOU in the story: an incoming request, an active loan, an overdue one (idempotent)
 ```
 
 ### 6. Try the automation
