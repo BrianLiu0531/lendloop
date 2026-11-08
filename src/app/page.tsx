@@ -110,7 +110,7 @@ export default function LandingPage() {
           <div className="animate-fade-up">
             <ShelfCount />
             <h1 className="max-w-2xl font-display text-[2.75rem] leading-[1.04] tracking-[-0.025em] text-ink sm:text-7xl">
-              Borrow your neighbors&apos; tools. <span className="italic text-brand">Lend yours.</span>
+              Borrow your neighbors&apos; tools. <span className="sm:block">Lend yours.</span>
             </h1>
             <p className="mt-6 max-w-[34rem] text-lg leading-relaxed text-ink-soft">
               LendLoop is a lending board for neighbors. The drill in your shed, the ladder you used once, the
