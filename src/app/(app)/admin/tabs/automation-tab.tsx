@@ -36,7 +36,7 @@ export function AutomationTab() {
     <div className="space-y-8">
       <div
         className={cn(
-          "flex items-center gap-3 rounded-2xl px-5 py-4",
+          "flex items-center gap-3 rounded-xl px-5 py-4",
           healthy ? "bg-brand-soft text-brand-strong" : "bg-warn-soft text-warn",
         )}
         role="status"
@@ -138,7 +138,7 @@ export function AutomationTab() {
         <h2 className="mb-3 font-display text-xl">Recent notifications</h2>
         <Card className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="border-b border-line text-left text-xs uppercase tracking-wide text-ink-faint">
+            <thead className="border-b border-line text-left text-[13px] font-medium text-ink-faint">
               <tr>
                 <th className="px-4 py-3 font-medium">Event</th>
                 <th className="px-4 py-3 font-medium">Tool</th>

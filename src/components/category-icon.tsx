@@ -1,7 +1,7 @@
 import { CATEGORY, type Category } from "@/lib/catalog";
 import { cn } from "@/lib/cn";
 
-const BOX = { sm: "size-9 rounded-lg", md: "size-12 rounded-xl", lg: "size-20 rounded-2xl" } as const;
+const BOX = { sm: "size-9 rounded-lg", md: "size-12 rounded-lg", lg: "size-20 rounded-xl" } as const;
 const ART = { sm: "size-6", md: "size-8", lg: "size-14" } as const;
 
 /**

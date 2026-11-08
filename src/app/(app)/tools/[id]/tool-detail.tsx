@@ -94,7 +94,7 @@ export function ToolDetail() {
             </div>
 
             <div className="mt-8 border-t border-line pt-6">
-              <h2 className="text-sm font-medium uppercase tracking-wide text-ink-faint">
+              <h2 className="text-sm font-medium text-ink-faint">
                 About this tool
               </h2>
               <p className="mt-2 whitespace-pre-line leading-relaxed text-ink-soft">
@@ -103,7 +103,7 @@ export function ToolDetail() {
             </div>
 
             <div className="mt-8 border-t border-line pt-6">
-              <h2 className="flex items-center gap-1.5 text-sm font-medium uppercase tracking-wide text-ink-faint">
+              <h2 className="flex items-center gap-1.5 text-sm font-medium text-ink-faint">
                 <CalendarDays className="size-4" aria-hidden /> Booked dates
               </h2>
               {upcoming.length === 0 ? (
@@ -174,7 +174,7 @@ export function ToolDetail() {
 
           {tool.myLoans.length > 0 && (
             <Card className="p-6">
-              <h2 className="text-sm font-medium uppercase tracking-wide text-ink-faint">
+              <h2 className="text-sm font-medium text-ink-faint">
                 Your history with this tool
               </h2>
               <ul className="mt-3 space-y-2.5">
@@ -245,7 +245,7 @@ function Gallery({
   }
   const current = photos[Math.min(active, photos.length - 1)];
   return (
-    <div className="bg-ink">
+    <div className="bg-sunken">
       {/* eslint-disable-next-line @next/next/no-img-element -- Convex storage URL */}
       <img
         src={current}

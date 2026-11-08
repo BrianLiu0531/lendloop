@@ -24,7 +24,7 @@ export function ToolCard({ tool, index = 0 }: { tool: BoardTool; index?: number 
   return (
     <Link
       href={`/tools/${tool._id}`}
-      className="group flex animate-fade-up flex-col overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface shadow-[var(--shadow-card)] transition-all hover:-translate-y-1 hover:border-line-strong hover:shadow-[var(--shadow-lift)]"
+      className="group flex animate-fade-up flex-col overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface transition-[border-color,box-shadow] duration-200 hover:border-line-strong hover:shadow-[var(--shadow-hover)]"
       style={{ animationDelay: `${Math.min(index, 12) * 25}ms` }}
     >
       <div className={cn("relative aspect-[4/3] overflow-hidden", !tool.coverUrl && CATEGORY[tool.category].tint)}>
@@ -53,7 +53,7 @@ export function ToolCard({ tool, index = 0 }: { tool: BoardTool; index?: number 
         </div>
       </div>
       <div className="flex flex-1 flex-col p-5">
-        <p className="text-xs font-medium uppercase tracking-wide text-ink-faint">
+        <p className="text-[13px] font-medium text-ink-faint">
           {CATEGORY[tool.category].label} · {CONDITION[tool.condition].label}
         </p>
         <h3 className="mt-1 font-display text-xl leading-snug text-ink group-hover:text-brand-strong">{tool.name}</h3>

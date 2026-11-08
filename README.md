@@ -405,6 +405,8 @@ npm run check   # tsc (app + convex) → eslint → vitest
 
 The n8n workflows were tested end to end against the local stack (signed delivery, duplicate, tampered and stale requests, SMTP outage and recovery, idempotent re-runs).
 
+The landing page was checked in headless Chrome at 1440, 1024, 820, 768, 390 and 320 px with the browser checker from [taste-skill](https://github.com/Leonxlnx/taste-skill) (MIT). It caught real problems, and these are fixed: muted text and the "on loan" badge under 4.5:1 contrast, hero photos requested too small for their crop, phone tap targets under 44 px, a section ending without an action, and the missing skip link and share image. Its marketing-site layout rules (every section exactly one screen tall, its own grid markup) don't fit an app and were left alone. The same pass flattened the app's surfaces: hairlines instead of shadows, one radius scale, and no tracked capitals.
+
 ---
 
 ## Project layout

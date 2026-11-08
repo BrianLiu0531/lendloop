@@ -16,42 +16,34 @@
   --color-line-strong: #d4cab9;
 
   --color-ink: #1d2721;
-  --color-ink-soft: #4a5750;
-  --color-ink-faint: #7d877f;
+  --color-ink-soft: #424d47;
+  --color-ink-faint: #58635c; /* 5.3:1 on sunken, 5.9:1 on paper */
 
   --color-brand: #2d6a4f;
   --color-brand-strong: #1f4d39;
   --color-brand-soft: #e3efe7;
 
-  --color-trust: #b7791f;
+  --color-trust: #8a5c00;
   --color-trust-soft: #fbf0d9;
 
-  --color-warn: #b45309;
+  --color-warn: #9a4a0b;
   --color-warn-soft: #fdf0e1;
   --color-danger: #b42318;
   --color-danger-soft: #fdecea;
   --color-info: #2b5c8a;
   --color-info-soft: #e6eff8;
 
-  --radius-card: 1rem;
-  --shadow-card: 0 1px 2px rgb(29 39 33 / 0.04), 0 4px 16px -6px rgb(29 39 33 / 0.08);
-  --shadow-lift: 0 2px 4px rgb(29 39 33 / 0.05), 0 12px 32px -10px rgb(29 39 33 / 0.18);
+  /* Flat surfaces: a 1px line does the separating; shadow only on hover and on dialogs. */
+  --radius-card: 0.75rem;
+  --shadow-card: 0 0 #0000;
+  --shadow-hover: 0 2px 8px rgb(29 39 33 / 0.05);
+  --shadow-lift: 0 1px 2px rgb(29 39 33 / 0.04), 0 16px 40px -16px rgb(29 39 33 / 0.2);
 
-  --animate-fade-up: fade-up 0.35s ease-out both;
-  --animate-float: float 6s ease-in-out infinite;
-  @keyframes float {
-    0%,
-    100% {
-      transform: translateY(0) rotate(var(--tilt, 0deg));
-    }
-    50% {
-      transform: translateY(-12px) rotate(var(--tilt, 0deg));
-    }
-  }
+  --animate-fade-up: fade-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
   @keyframes fade-up {
     from {
       opacity: 0;
-      transform: translateY(6px);
+      transform: translateY(8px);
     }
     to {
       opacity: 1;
@@ -84,14 +76,8 @@
   }
 }
 
-/* Subtle dot grid on the landing hero. */
-.bg-grain {
-  background-image: radial-gradient(rgb(29 39 33 / 0.06) 1px, transparent 1px);
-  background-size: 18px 18px;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .animate-float {
+  .animate-fade-up {
     animation: none;
   }
 }

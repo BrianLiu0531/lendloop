@@ -12,13 +12,13 @@ export default function AppError({ error, reset }: { error: Error & { digest?: s
 
   return (
     <div className="mx-auto max-w-md py-24 text-center">
-      <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-2xl bg-danger-soft text-danger">
+      <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-xl bg-danger-soft text-danger">
         <AlertTriangle className="size-5" aria-hidden />
       </div>
       <h1 className="font-display text-2xl">Something went wrong</h1>
       <p className="mt-2 text-ink-soft">{errorMessage(error)}</p>
       {process.env.NODE_ENV === "development" && (
-        <pre className="mt-4 max-h-60 overflow-auto rounded-xl bg-sunken p-3 text-left font-mono text-xs whitespace-pre-wrap text-ink-soft">
+        <pre className="mt-4 max-h-60 overflow-auto rounded-lg bg-sunken p-3 text-left font-mono text-xs whitespace-pre-wrap text-ink-soft">
           {error.message}
           {error.digest ? `\ndigest: ${error.digest}` : ""}
           {error.stack ? `\n\n${error.stack.split("\n").slice(0, 8).join("\n")}` : ""}

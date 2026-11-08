@@ -19,7 +19,7 @@ function NavLink({ href, icon, label, count }: { href: string; icon: ReactNode; 
       href={href}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-colors",
+        "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
         active ? "bg-ink text-paper" : "text-ink-soft hover:bg-sunken hover:text-ink",
       )}
     >
@@ -79,7 +79,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const me = useQuery(api.users.me);
   return (
     <div className="flex min-h-full flex-col">
-      <header className="sticky top-0 z-30 border-b border-line bg-paper/85 backdrop-blur-md">
+      <header className="sticky top-0 z-30 border-b border-line bg-paper">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-5 py-3 sm:flex-row sm:items-center sm:gap-6 sm:px-8">
           <div className="flex items-center justify-between">
             <Logo href="/board" />

@@ -103,8 +103,8 @@ export function RequestDialog({
         </div>
 
         {upcoming.length > 0 && (
-          <div className="rounded-xl bg-sunken px-4 py-3">
-            <p className="mb-1.5 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-ink-faint">
+          <div className="rounded-lg bg-sunken px-4 py-3">
+            <p className="mb-1.5 flex items-center gap-1.5 text-[13px] font-medium text-ink-faint">
               <CalendarX2 className="size-3.5" aria-hidden /> Already booked
             </p>
             <ul className="flex flex-wrap gap-1.5">

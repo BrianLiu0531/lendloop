@@ -17,7 +17,7 @@ export function LogoMark({ size = 28 }: { size?: number }) {
 
 export function Logo({ href = "/" }: { href?: string }) {
   return (
-    <Link href={href} className="flex items-center gap-2.5 rounded-lg" aria-label="LendLoop home">
+    <Link href={href} className="flex min-h-11 items-center gap-2.5 rounded-lg" aria-label="LendLoop home">
       <LogoMark />
       <span className="font-display text-xl font-semibold tracking-tight text-ink">LendLoop</span>
     </Link>

@@ -71,7 +71,7 @@ export function PhotoPicker({
     <div>
       <div className="grid grid-cols-4 gap-2.5">
         {photos.map((p, i) => (
-          <div key={p.id} className="group relative aspect-square overflow-hidden rounded-xl border border-line bg-sunken">
+          <div key={p.id} className="group relative aspect-square overflow-hidden rounded-lg border border-line bg-sunken">
             {/* eslint-disable-next-line @next/next/no-img-element -- blob: or Convex storage URL */}
             <img src={p.url} alt={i === 0 ? "Cover photo" : `Photo ${i + 1}`} className="size-full object-cover" />
             {i === 0 ? (
@@ -98,7 +98,7 @@ export function PhotoPicker({
           </div>
         ))}
         {Array.from({ length: pending }).map((_, i) => (
-          <div key={`p${i}`} className="flex aspect-square items-center justify-center rounded-xl border border-line bg-sunken">
+          <div key={`p${i}`} className="flex aspect-square items-center justify-center rounded-lg border border-line bg-sunken">
             <Loader2 className="size-5 animate-spin text-ink-faint" aria-label="Uploading" />
           </div>
         ))}
@@ -117,7 +117,7 @@ export function PhotoPicker({
               void add([...e.dataTransfer.files]);
             }}
             className={cn(
-              "flex aspect-square flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed text-xs font-medium transition-colors",
+              "flex aspect-square flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed text-xs font-medium transition-colors",
               dragging ? "border-brand bg-brand-soft text-brand-strong" : "border-line-strong text-ink-faint hover:border-brand hover:text-brand-strong",
               photos.length + pending === 0 && "col-span-2 aspect-auto py-6",
             )}

@@ -178,7 +178,7 @@ export function LoanCard({
             </p>
           )}
           {loan.message && perspective === "lender" && (
-            <p className="mt-3 flex gap-2 rounded-xl bg-sunken px-3.5 py-2.5 text-sm text-ink-soft">
+            <p className="mt-3 flex gap-2 rounded-lg bg-sunken px-3.5 py-2.5 text-sm text-ink-soft">
               <MessageSquareQuote className="mt-0.5 size-4 shrink-0 text-ink-faint" aria-hidden />
               <span className="whitespace-pre-line">{loan.message}</span>
             </p>

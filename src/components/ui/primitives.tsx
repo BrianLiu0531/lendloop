@@ -93,7 +93,7 @@ export function Card({ className, ...props }: ComponentProps<"div">) {
 // ────────────────────────────── Fields ─────────────────────────────
 
 const fieldBase =
-  "w-full rounded-xl border border-line-strong bg-surface px-3.5 text-sm text-ink placeholder:text-ink-faint " +
+  "w-full rounded-lg border border-line-strong bg-surface px-3.5 text-sm text-ink placeholder:text-ink-faint " +
   "transition-colors focus:border-brand focus:outline-none focus:ring-3 focus:ring-brand/15 disabled:opacity-60";
 
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(function Input(
@@ -170,7 +170,7 @@ export function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center rounded-[var(--radius-card)] border border-dashed border-line-strong bg-surface/60 px-6 py-14 text-center">
-      <div className="mb-4 flex size-12 items-center justify-center rounded-2xl bg-brand-soft text-brand">{icon}</div>
+      <div className="mb-4 flex size-12 items-center justify-center rounded-xl bg-brand-soft text-brand">{icon}</div>
       <h3 className="font-display text-xl text-ink">{title}</h3>
       {children && <p className="mt-1.5 max-w-sm text-sm text-ink-soft">{children}</p>}
       {action && <div className="mt-5">{action}</div>}

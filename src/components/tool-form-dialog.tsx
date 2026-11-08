@@ -127,7 +127,7 @@ function ToolForm({ initial, onDone }: { initial: ToolDraft; onDone: () => void 
             <label
               key={c}
               className={cn(
-                "cursor-pointer rounded-xl border px-3.5 py-2.5 transition-colors",
+                "cursor-pointer rounded-lg border px-3.5 py-2.5 transition-colors",
                 draft.condition === c ? "border-brand bg-brand-soft" : "border-line-strong hover:bg-sunken",
               )}
             >

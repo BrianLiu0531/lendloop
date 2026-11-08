@@ -38,7 +38,7 @@ export function LoansTab() {
       ) : (
         <Card className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="border-b border-line text-left text-xs uppercase tracking-wide text-ink-faint">
+            <thead className="border-b border-line text-left text-[13px] font-medium text-ink-faint">
               <tr>
                 <th className="px-4 py-3 font-medium">Tool</th>
                 <th className="px-4 py-3 font-medium">Lender</th>

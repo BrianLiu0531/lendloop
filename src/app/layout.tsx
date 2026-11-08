@@ -1,5 +1,5 @@
 import { ClerkProvider } from "@clerk/nextjs";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Fraunces, Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import { ConvexClientProvider } from "@/components/providers";
@@ -10,9 +10,16 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 const fraunces = Fraunces({ variable: "--font-fraunces", subsets: ["latin"], axes: ["opsz", "SOFT"] });
 
 export const metadata: Metadata = {
-  title: { default: "LendLoop — Borrow what you need. Lend what you don't.", template: "%s · LendLoop" },
+  title: { default: "LendLoop: a tool-lending board for neighbors", template: "%s · LendLoop" },
   description: "A neighborhood tool-lending board. List the tools you're happy to lend, borrow the ones you need.",
+  openGraph: {
+    title: "LendLoop: a tool-lending board for neighbors",
+    description: "Borrow your neighbors' tools. Lend yours. Requests, approvals and reminders in one place.",
+    type: "website",
+  },
 };
+
+export const viewport: Viewport = { themeColor: "#faf7f2" };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (

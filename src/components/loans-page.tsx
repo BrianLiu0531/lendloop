@@ -72,7 +72,7 @@ export function LoansPage({ perspective }: { perspective: "borrower" | "lender" 
         </EmptyState>
       ) : (
         <>
-          <div className="mb-5 inline-flex rounded-xl border border-line bg-surface p-1" role="tablist">
+          <div className="mb-5 inline-flex rounded-lg border border-line bg-surface p-1" role="tablist">
             <TabButton active={effectiveTab === "open"} onClick={() => setTab("open")}>
               Open
               <span className="ml-1.5 tabular-nums text-ink-faint">{open.length}</span>
